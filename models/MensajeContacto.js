@@ -14,10 +14,11 @@ const MensajeContacto = sequelize.define('MensajeContacto', {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-    leido: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
+    estado: {
+      type: DataTypes.ENUM('Nuevo', 'Leído', 'Respondido'),
+      defaultValue: 'Nuevo'
     }
+
 }, {
   tableName: 'mensajes_contacto',
   timestamps: true,

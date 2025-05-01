@@ -19,7 +19,7 @@ router.get('/resumen', authJWT, verificarRol(['Admin', 'Asesor']), async (req, r
         estado: 'activo' // O el estado que consideres "nuevo"
       },
     });
-    const mensajesPendientes = await MensajeContacto.count({ where: { leido:false } });
+    const mensajesPendientes = await MensajeContacto.count({ where: { estado: 'Nuevo' } });
     const unaSemanaDespues = new Date();
     unaSemanaDespues.setDate(unaSemanaDespues.getDate() + 7);
     const eventosProximosSemana = await Event.count({
@@ -33,17 +33,20 @@ router.get('/resumen', authJWT, verificarRol(['Admin', 'Asesor']), async (req, r
       nuevosClientesMes,
       mensajesPendientes,
       eventosProximosSemana
-    });
-    console.log('Resumen del dashboard obtenido correctamente:', {
-      totalClientes,
-      nuevosClientesMes,
-      mensajesPendientes,
-      eventosProximosSemana
-    });
-    
+    });    
   } catch (error) {
     console.error('Error al obtener el resumen del dashboard:', error);
     res.status(500).json({ error: 'Error al obtener el resumen del dashboard' });
+  }
+});
+
+router.get('/clientes', async (req, res) => {
+  try {
+    const clientes = await Cliente.findAll();
+    res.json(clientes);
+  } catch (error) {
+    console.error('Error al obtener clientes:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
