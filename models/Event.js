@@ -13,11 +13,11 @@ const Event = sequelize.define("Event", {
   },
   cliente_id: {
     type: DataTypes.UUID,
-    allowNull: true, // Si quieres permitir eventos sin cliente asignado inicialmente
+    allowNull: false, // Si quieres permitir eventos sin cliente asignado inicialmente
   },
   titulo: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   fecha_inicio: {
     type: DataTypes.DATEONLY,
@@ -37,11 +37,19 @@ const Event = sequelize.define("Event", {
   },
   ubicacion: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   tipo: {
     type: DataTypes.ENUM("Boda", "Bautizo", "Cumpleaños", "Otro"),
     allowNull: false,
+  },
+  estado: {
+    type: DataTypes.ENUM('Pendiente', 'Activo', 'Evento Finalizado', 'Inactivo'),
+    defaultValue: 'Pendiente',
+  },
+  link_invitacion: {
+    type: DataTypes.TEXT,
+    allowNull: true,
   },
 }, {
   tableName: 'eventos',

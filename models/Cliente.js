@@ -24,6 +24,10 @@ const Cliente = sequelize.define('Cliente', {
     type: DataTypes.ENUM('activo', 'inactivo', 'pendiente'),
     defaultValue: 'pendiente',
   },
+  direccion: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 }, {
   tableName: 'clientes',
   timestamps: true,

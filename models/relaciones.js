@@ -7,6 +7,7 @@ const LikeComentario = require('./LikeComentario');
 const Confirmacion = require('./Confirmacion');
 const Galeria = require('./Galeria');
 const Notificacion = require('./Notificacion');
+const EventoUsuario = require('./EventoUsuario');
 
 // Relación: Cliente -> Eventos
 Cliente.hasMany(Evento, { foreignKey: 'cliente_id', onDelete: 'CASCADE' });
@@ -52,6 +53,11 @@ Galeria.belongsTo(Evento, { foreignKey: 'evento_id' });
 Evento.hasMany(Notificacion, { foreignKey: 'evento_id', onDelete: 'CASCADE' });
 Notificacion.belongsTo(Evento, { foreignKey: 'evento_id' });
 
+User.belongsToMany(Evento, { through: "EventoUsuario", foreignKey: "usuario_id" });
+Evento.belongsToMany(User, { through: "EventoUsuario", foreignKey: "evento_id" });
+
+User.hasMany(Evento, { foreignKey: "creado_por" }); // Creador del evento (Admin o Asesor)
+Evento.belongsTo(User, { foreignKey: "creado_por", as: "creador" });
 
 
 module.exports = {

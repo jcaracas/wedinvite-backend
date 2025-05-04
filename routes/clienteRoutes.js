@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Cliente = require('../models/Cliente');
+const authJWT = require('../middlewares/authJWT'); // Middleware para autenticación JWT
 
 // Crear nuevo cliente
-router.post('/', async (req, res) => {
+router.post('/', authJWT, async (req, res) => {
   try {
     const { nombre, email, telefono, direccion } = req.body;
 
@@ -24,7 +25,7 @@ router.post('/', async (req, res) => {
 });
 
 // Obtener todos los clientes (opcional)
-router.get('/', async (req, res) => {
+router.get('/', authJWT, async (req, res) => {
   try {
     const clientes = await Cliente.findAll();
     res.json(clientes);
@@ -35,7 +36,7 @@ router.get('/', async (req, res) => {
 });
 
 // Obtener cliente por ID (opcional)
-router.get('/:id', async (req, res) => {
+router.get('/:id', authJWT, async (req, res) => {
   try {
     const cliente = await Cliente.findByPk(req.params.id);
     if (!cliente) {
@@ -47,5 +48,29 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+// Actualizar cliente
+router.put('/:id', authJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, email, telefono, estado } = req.body;
+
+    const cliente = await Cliente.findByPk(id);
+    if (!cliente) {
+      return res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+
+    // Validación simple
+    if (!nombre || !email) {
+      return res.status(400).json({ error: 'Nombre y email son requeridos' });
+    }
+
+    await cliente.update({ nombre, email, telefono, estado });
+    res.json(cliente);
+  } catch (error) {
+    console.error('Error al actualizar cliente:', error);
+    res.status(500).json({ error: 'Error al actualizar cliente' });
+  }
+});
+
 
 module.exports = router;

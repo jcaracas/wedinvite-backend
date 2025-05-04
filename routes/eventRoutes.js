@@ -3,6 +3,7 @@ const Event = require("../models/Event");
 const authJWT = require('../middlewares/authJWT');  
 const verificarRol = require('../middlewares/verificarRol'); // Middleware para verificar roles
 const Cliente = require("../models/Cliente"); // Asegúrate de importar tu modelo Cliente
+const User = require("../models/User"); // Asegúrate de importar tu modelo User
 const { Op } = require("sequelize"); // Asegúrate de importar Sequelize si lo usas para las consultas
 
 
@@ -10,11 +11,11 @@ const { Op } = require("sequelize"); // Asegúrate de importar Sequelize si lo u
 const router = express.Router();
 
 // 🔹 Crear un evento
-router.post("/", async (req, res) => {
+router.post("/", authJWT, async (req, res) => {
   try {
     const evento = await Event.create(req.body);
     res.status(201).json(evento);
-  } catch (error) {
+    } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
@@ -39,35 +40,62 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.get('/proximos', authJWT, verificarRol(['admin', 'asesor']), async (req, res) => {
+router.get('/proximos', authJWT,  async (req, res) => {
   try {
-    const dias = parseInt(req.query.dias) || 7;
+    const rangoDias = parseInt(req.query.rangoDias) || 7;
+
+    const fechaInicio = new Date(); // hoy
     const fechaFin = new Date();
-    fechaFin.setDate(fechaFin.getDate() + dias);
-    const fechaInicio = new Date();
-    console.log(dias, fechaFin, fechaInicio);
-    
+    fechaFin.setDate(fechaFin.getDate() + rangoDias); // hoy + N días
+
     const eventos = await Event.findAll({
       where: {
-        fechaEvento: {
+        fecha_inicio: {
           [Op.gte]: fechaInicio,
           [Op.lte]: fechaFin,
-        },
+        }
       },
-      include: [{ model: Cliente, as: 'Cliente', attributes: ['nombre'] }],
+      include: [{
+        model: Cliente,
+        as: 'Cliente',
+        attributes: ['nombre']
+      }]
     });
 
-    const eventosConNombreCliente = eventos.map(evento => ({
+    const eventosFormateados = eventos.map(evento => ({
       id: evento.id,
-      fechaEvento: evento.fechaEvento,
+      titulo: evento.titulo,
       tipo: evento.tipo,
-      nombreCliente: evento.Cliente ? evento.Cliente.nombre : 'Cliente Desconocido',
+      fecha_inicio: evento.fecha_inicio,
+      hora_inicio: evento.hora_inicio,
+      nombreCliente: evento.Cliente ? evento.Cliente.nombre : 'Desconocido'
     }));
 
-    res.json(eventosConNombreCliente);
+    res.json(eventosFormateados);
   } catch (error) {
-    console.error('Error al obtener los eventos próximos:', error);
-    res.status(500).json({ error: 'Error al obtener los eventos próximos' });
+    console.error('Error al obtener eventos próximos:', error);
+    res.status(500).json({ error: 'Error al obtener eventos próximos' });
+  }
+});
+
+router.get('/', authJWT, async (req, res) => {
+  try {
+    const eventos = await Event.findAll({
+      include: [
+        {
+          model: Cliente,
+          attributes: ['nombre']
+        },
+        {
+          model: User,
+          attributes: ['nombre']
+        }
+      ]
+    });
+    res.json(eventos);
+  } catch (error) {
+    console.error('Error al obtener eventos:', error);
+    res.status(500).json({ mensaje: 'Error al obtener eventos' });
   }
 });
 
