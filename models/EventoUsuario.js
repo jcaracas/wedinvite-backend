@@ -16,8 +16,8 @@ const EventoUsuario = sequelize.define("EventoUsuario", {
     allowNull: false,
   },
   rol_en_evento: {
-    type: DataTypes.ENUM("Novio", "Novia"),
-    allowNull: false,
+    type: DataTypes.ENUM("Novio", "Novia", "Invitado"),
+    allowNull: true,
   }
 }, {
   tableName: 'evento_usuario',

@@ -51,6 +51,11 @@ const Event = sequelize.define("Event", {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  codigo: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true, // Asegura que el código sea único
+  },
 }, {
   tableName: 'eventos',
   timestamps: true,

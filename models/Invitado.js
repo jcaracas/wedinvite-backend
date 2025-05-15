@@ -23,6 +23,18 @@ const Invitado = sequelize.define("Invitado", {
     type: DataTypes.ENUM("Pendiente", "Confirmado", "Rechazado"),
     defaultValue: "Pendiente",
   },
-}, { timestamps: true });
+  comentario: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  acompanantes: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+
+}, { 
+  tableName: 'invitados',
+  timestamps: true 
+});
 
 module.exports = Invitado;

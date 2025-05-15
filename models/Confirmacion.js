@@ -18,7 +18,11 @@ const Confirmacion = sequelize.define('Confirmacion', {
   estado: {
     type: DataTypes.ENUM('Confirmado', 'Pendiente', 'Rechazado'),
     allowNull: false
-  }
+  },
+  comentario: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 }, {
   tableName: 'confirmaciones',
   timestamps: true
