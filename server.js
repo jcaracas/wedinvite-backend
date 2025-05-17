@@ -31,6 +31,7 @@ const notificacionRoutes = require("./routes/notificacionRoutes");
 const contactoRoutes = require('./routes/contacto');
 const clienteRoutes = require('./routes/clienteRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes'); // Importa las rutas del dashboard
+const regalosRoutes = require('./routes/regalosRoutes'); // Importa las rutas de regalos
 
 
 app.use(express.json());
@@ -44,6 +45,7 @@ app.use("/api/notificaciones", notificacionRoutes);
 app.use("/api/contacto", contactoRoutes);
 app.use("/api/clientes", clienteRoutes);
 app.use("/api/dashboard", dashboardRoutes); // Usa las rutas del dashboard
+app.use("/api/regalos", regalosRoutes); // Usa las rutas de regalos
 
 
 

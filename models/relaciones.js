@@ -7,7 +7,7 @@ const LikeComentario = require('./LikeComentario');
 const Confirmacion = require('./Confirmacion');
 const Galeria = require('./Galeria');
 const Notificacion = require('./Notificacion');
-const EventoUsuario = require('./EventoUsuario');
+const Regalo = require('./Regalo'); // Asegúrate de tener este modelo definido
 
 // Relación: Cliente -> Eventos
 Cliente.hasMany(Evento, { foreignKey: 'cliente_id', onDelete: 'CASCADE' });
@@ -59,6 +59,11 @@ Evento.belongsToMany(User, { through: "EventoUsuario", foreignKey: "evento_id" }
 User.hasMany(Evento, { foreignKey: "creado_por" }); // Creador del evento (Admin o Asesor)
 Evento.belongsTo(User, { foreignKey: "creado_por", as: "creador" });
 
+// Evento tiene muchos regalos
+Evento.hasMany(Regalo, {  foreignKey: 'evento_id',  as: 'regalos', onDelete: 'CASCADE'});
+// Regalo pertenece a un evento
+Regalo.belongsTo(Evento, { foreignKey: 'evento_id', as: 'evento'});
+
 
 module.exports = {
   User,
@@ -69,5 +74,6 @@ module.exports = {
   LikeComentario,
   Confirmacion,
   Galeria,
-  Notificacion
+  Notificacion,
+  Regalo
 };

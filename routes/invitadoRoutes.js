@@ -8,18 +8,8 @@ const router = express.Router();
 const {enviarCorreo} = require("../utils/mailer"); // Asegúrate de tener esta función para enviar correos
 const bcrypt = require('bcrypt');
 const XLSX = require('xlsx');
+const { Sequelize, Op } = require('sequelize');
 
-
-
-/*/ 🔹 Listar invitados de un evento
-router.get("/:evento_id", async (req, res) => {
-  try {
-    const invitados = await Invitado.findAll({ where: { evento_id: req.params.evento_id } });
-    res.json(invitados);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});*/
 
 router.post('/respuesta', async (req, res) => {
   const { nombre, email, codigo, estado_confirmacion, acompanantes, comentario } = req.body;
@@ -132,7 +122,6 @@ router.post('/respuesta', async (req, res) => {
   }
 });
 
-
 /*router.get('/test-correo', async (req, res) => {
   try {
     const resultado = await enviarCorreo({
@@ -230,6 +219,57 @@ router.post('/enviar-excel', authJWT, async (req, res) => {
   }
 });
 
+router.get('/estado/:codigo', authJWT, async (req, res) => {
+  try {
+    const { codigo } = req.params;
+
+    // Busca el evento por código
+    const evento = await Evento.findOne({ where: { codigo: codigo } });
+    if (!evento) return res.status(404).json({ error: 'Evento no encontrado' });
+
+    // Agrupa por estado_confirmacion
+    const invitados = await Invitado.findAll({
+      where: { evento_id: evento.id },
+      attributes: ['estado_confirmacion', [Sequelize.fn('COUNT', Sequelize.col('estado_confirmacion')), 'total']],
+      group: ['estado_confirmacion']
+    });
+
+    // Formato de respuesta: { Confirmado: 10, Pendiente: 5, Rechazado: 2 }
+    const resultado = {};
+    invitados.forEach(inv => {
+      resultado[inv.estado_confirmacion] = parseInt(inv.dataValues.total);
+    });
+
+    res.json(resultado);
+  } catch (error) {
+    console.error('Error al obtener resumen:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+router.get('/mensajes/:codigo', authJWT, async (req, res) => {
+  try {
+    const { codigo } = req.params;
+
+    const evento = await Evento.findOne({ where: { codigo: codigo } });
+    if (!evento) return res.status(404).json({ error: 'Evento no encontrado' });
+
+    const mensajes = await Invitado.findAll({
+      where: {
+        evento_id: evento.id,
+        comentario: { [Op.ne]: null }
+      },
+      order: [['updatedAt', 'DESC']],
+      limit: 5,
+      attributes: ['nombre', 'comentario']
+    });
+
+    res.json(mensajes);
+  } catch (error) {
+    console.error('Error al obtener mensajes:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
 
 
 module.exports = router;

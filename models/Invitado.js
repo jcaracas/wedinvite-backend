@@ -30,6 +30,9 @@ const Invitado = sequelize.define("Invitado", {
   acompanantes: {
     type: DataTypes.STRING,
     allowNull: true,
+  },favorito: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false, // Puedes establecer un valor por defecto (opcional)
   },
 
 }, { 
