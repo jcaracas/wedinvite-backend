@@ -2,6 +2,8 @@ const express = require("express");
 const Invitado = require("../models/Invitado");
 const Evento = require("../models/Event");
 const User = require("../models/User"); 
+const LikeComentario = require("../models/LikeComentario");
+const Notificaciones = require("../models/Notificacion");
 const authJWT = require("../middlewares/authJWT");
 const generarPassword = require("../utils/generarPassword");
 const router = express.Router();
@@ -51,6 +53,8 @@ router.post('/respuesta', async (req, res) => {
       evento_id: evento.id,
       comentario
     });
+    const mensaje = `${nombre} ha ${estado_confirmacion } su asistencia.`;
+
 
     // Si no rechazó, crear usuario y enviar correo
     if (estado_confirmacion.toLowerCase() !== 'rechazado') {
@@ -90,6 +94,8 @@ router.post('/respuesta', async (req, res) => {
           console.error("❌ Error inesperado al enviar correo:", err);
         });
 
+
+
       } else {
         // Usuario ya existe
         res.status(200).json({ mensaje: 'Tu respuesta ha sido registrada. Ya tienes acceso, revisa tu correo.' });
@@ -115,6 +121,12 @@ router.post('/respuesta', async (req, res) => {
       // Invitado rechazó la invitación
       return res.status(200).json({ mensaje: 'Tu respuesta ha sido registrada. Lamentamos no verte en el evento.' });
     }
+    await Notificaciones.create({
+      mensaje,
+      usuario_id: evento.cliente_id,
+      evento_id: evento.id,
+      leido: false
+  });
 
   } catch (error) {
     console.error("❌ Error general:", error);
@@ -122,47 +134,47 @@ router.post('/respuesta', async (req, res) => {
   }
 });
 
-/*router.get('/test-correo', async (req, res) => {
-  try {
-    const resultado = await enviarCorreo({
-      to: 'josecaracas@gmail.com', // reemplaza por un correo real de prueba
-      subject: '🚀 Prueba de envío de correo desde WedInvite',
-      html: `<h1>Hola!</h1><p>Este es un correo de prueba desde WedInvite.</p>`
-    });
-
-    if (!resultado.exito) {
-      console.error("Error al enviar correo:", resultado.error);
-      return res.status(500).json({ mensaje: 'Falló el envío de correo.', error: resultado.error });
-    }
-
-    console.log("Correo enviado con éxito:", resultado.mensajeId);
-    res.status(200).json({ mensaje: 'Correo enviado con éxito.', id: resultado.mensajeId });
-  } catch (error) {
-    console.error("Error general:", error);
-    res.status(500).json({ mensaje: 'Error interno del servidor.', error });
-  }
-});*/
 
 // Obtener invitados por evento para usuario tipo Novia
-router.get('/evento/:codigo', authJWT, async (req, res) => {
+router.get('/evento/:codigo', async (req, res) => {
   const { codigo } = req.params;
+
   try {
     const evento = await Evento.findOne({ where: { codigo } });
-    if (!evento) {
-      return res.status(404).json({ mensaje: 'Evento no encontrado' });
-    }
+    if (!evento) return res.status(404).json({ mensaje: 'Evento no encontrado' });
 
     const invitados = await Invitado.findAll({
       where: { evento_id: evento.id },
-      attributes: ['nombre', 'email', 'acompanantes', 'estado_confirmacion', 'comentario']
+      order: [['updatedAt', 'DESC']]
     });
 
-    res.status(200).json(invitados);
+    const resultado = await Promise.all(
+      invitados.map(async (inv) => {
+        const likes = await LikeComentario.count({ where: { invitado_id: inv.id } });
+
+        return {
+          id: inv.id,
+          nombre: inv.nombre,
+          comentario: inv.comentario,
+          favorito: inv.favorito,
+          createdAt: inv.createdAt,
+          updatedAt: inv.updatedAt,
+          acompanantes: inv.acompanantes,
+          estado_confirmacion: inv.estado_confirmacion,
+          email: inv.email,
+          mesa: inv.mesa,
+          likes
+        };
+      })
+    );
+    
+    res.json(resultado);
   } catch (error) {
     console.error('Error al obtener invitados:', error);
-    res.status(500).json({ mensaje: 'Error al consultar invitados' });
+    res.status(500).json({ mensaje: 'Error interno del servidor' });
   }
 });
+
 
 router.post('/enviar-excel', authJWT, async (req, res) => {
   const { codigo } = req.body;
@@ -186,7 +198,8 @@ router.post('/enviar-excel', authJWT, async (req, res) => {
       Email: inv.email,
       Acompañantes: inv.acompanantes,
       Estado: inv.estado_confirmacion,
-      Comentario: inv.comentario || ''
+      Comentario: inv.comentario || '',
+      Mesa: inv.mesa || ''
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -247,27 +260,20 @@ router.get('/estado/:codigo', authJWT, async (req, res) => {
   }
 });
 
-router.get('/mensajes/:codigo', authJWT, async (req, res) => {
+router.post("/asignar-mesas",authJWT, async (req, res) => {
+  const asignaciones = req.body; // [{ id: uuid, mesa: 2 }, ...]
   try {
-    const { codigo } = req.params;
+      for (const asignacion of asignaciones) {
+          await Invitado.update(
+              { mesa: asignacion.mesa },
+              { where: { id: asignacion.id } }
+          );
+      }
 
-    const evento = await Evento.findOne({ where: { codigo: codigo } });
-    if (!evento) return res.status(404).json({ error: 'Evento no encontrado' });
-
-    const mensajes = await Invitado.findAll({
-      where: {
-        evento_id: evento.id,
-        comentario: { [Op.ne]: null }
-      },
-      order: [['updatedAt', 'DESC']],
-      limit: 5,
-      attributes: ['nombre', 'comentario']
-    });
-
-    res.json(mensajes);
+      res.status(200).json({ message: "Asignaciones guardadas correctamente." });
   } catch (error) {
-    console.error('Error al obtener mensajes:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+      console.error("Error en asignación de mesas:", error);
+      res.status(500).json({ message: "Error al asignar mesas." });
   }
 });
 

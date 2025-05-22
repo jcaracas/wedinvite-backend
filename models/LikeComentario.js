@@ -11,12 +11,12 @@ const LikeComentario = sequelize.define('LikeComentario', {
     type: DataTypes.UUID,
     allowNull: false
   },
-  comentario_id: {
+  invitado_id: {
     type: DataTypes.UUID,
     allowNull: false
   }
-}, {
-  tableName: 'like_comentarios',
+},  {
+  tableName: 'like_comentario',
   timestamps: true,
   underscored: true
 });

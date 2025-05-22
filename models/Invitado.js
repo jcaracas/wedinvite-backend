@@ -33,7 +33,10 @@ const Invitado = sequelize.define("Invitado", {
   },favorito: {
     type: DataTypes.BOOLEAN,
     defaultValue: false, // Puedes establecer un valor por defecto (opcional)
-  },
+  },mesa: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  }
 
 }, { 
   tableName: 'invitados',

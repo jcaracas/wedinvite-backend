@@ -30,12 +30,11 @@ User.hasMany(Comentario, { foreignKey: 'usuario_id', onDelete: 'CASCADE' });
 Comentario.belongsTo(User, { foreignKey: 'usuario_id' });
 
 // Relación: Comentario -> Likes
-Comentario.hasMany(LikeComentario, { foreignKey: 'comentario_id', onDelete: 'CASCADE' });
-LikeComentario.belongsTo(Comentario, { foreignKey: 'comentario_id' });
-
-// Relación: Usuario -> Likes
-User.hasMany(LikeComentario, { foreignKey: 'usuario_id', onDelete: 'CASCADE' });
+User.hasMany(LikeComentario, { foreignKey: 'usuario_id' });
 LikeComentario.belongsTo(User, { foreignKey: 'usuario_id' });
+
+Invitado.hasMany(LikeComentario, { foreignKey: 'invitado_id' });
+LikeComentario.belongsTo(Invitado, { foreignKey: 'invitado_id' });
 
 // Relación: Evento -> Confirmaciones
 Evento.hasMany(Confirmacion, { foreignKey: 'evento_id', onDelete: 'CASCADE' });
