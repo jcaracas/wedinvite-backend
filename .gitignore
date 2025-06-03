@@ -43,3 +43,10 @@ pids/
 .idea/
 *.sublime-workspace
 *.sublime-project
+
+# Ignora videos u otros assets grandes
+public/uploads/
+# Ignora imágenes de gran tamaño    
+*.jpg
+*.jpeg
+*.webp
