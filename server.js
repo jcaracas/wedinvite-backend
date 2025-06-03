@@ -33,6 +33,7 @@ const clienteRoutes = require('./routes/clienteRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes'); // Importa las rutas del dashboard
 const regalosRoutes = require('./routes/regalosRoutes'); // Importa las rutas de regalos
 const likesRoutes = require('./routes/likesRoutes'); // Importa las rutas de likes
+const galeriaRoutes = require('./routes/galeriaRoutes'); // Importa las rutas de galería
 
 
 app.use(express.json());
@@ -48,6 +49,7 @@ app.use("/api/clientes", clienteRoutes);
 app.use("/api/dashboard", dashboardRoutes); // Usa las rutas del dashboard
 app.use("/api/regalos", regalosRoutes); // Usa las rutas de regalos
 app.use("/api/likes", likesRoutes); // Usa las rutas de likes
+app.use('/api/galeria', galeriaRoutes); // Usa las rutas de galería
 
 
 

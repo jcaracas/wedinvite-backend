@@ -22,6 +22,9 @@ const Galeria = sequelize.define('Galeria', {
   descripcion: {
     type: DataTypes.STRING,
     allowNull: true
+  },favorito: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false, // Puedes establecer un valor por defecto (opcional)
   }
 }, {
   tableName: 'galeria',
