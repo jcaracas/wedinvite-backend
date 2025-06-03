@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static('public'));
 
 // Ruta de prueba
 app.get("/", (req, res) => {
@@ -38,6 +39,8 @@ const galeriaRoutes = require('./routes/galeriaRoutes'); // Importa las rutas de
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
 
 app.use("/api/usuarios", userRoutes);
 app.use("/api/eventos", eventRoutes);
